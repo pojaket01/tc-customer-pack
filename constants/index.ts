@@ -1,7 +1,7 @@
 
 import * as CampaignType from "./campaign-type";
 
-export {
+export default {
     CampaignType
 };
 
