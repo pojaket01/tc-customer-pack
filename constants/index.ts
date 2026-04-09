@@ -1,7 +1,6 @@
+const CampaignType = require("./campaign-type");
 
-import * as CampaignType from "./campaign-type";
 
-export default {
-    CampaignType
+module.exports = {
+  CampaignType,
 };
-

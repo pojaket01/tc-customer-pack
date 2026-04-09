@@ -17,3 +17,7 @@ function generateLog(request: any, response: any, error: any): Object {
     
     return log;
 }
+
+module.exports = {
+    generateLog
+}

@@ -4,6 +4,6 @@ const CampaignType: Enum = {
     LineCampaign: "Line Campaign",
 }
 
-export {
+module.exports = {
     CampaignType
 }

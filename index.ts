@@ -1,5 +1,7 @@
-import Constant from "./constants/index"
+// import Constant from "./constants/index"
+const Constant = require("./constants/index");
 
 export {
     Constant
-}
+};
+

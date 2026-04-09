@@ -36,4 +36,4 @@ function error(message: string) {
   logger.error(message);
 }
 
-export { debug, error, info, warn };
+module.exports = { debug, error, info, warn };
