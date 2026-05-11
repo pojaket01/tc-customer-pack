@@ -1,2 +1,2 @@
-export * from './invoice';
+export { IInvoice } from './invoice';
 //# sourceMappingURL=index.d.ts.map
