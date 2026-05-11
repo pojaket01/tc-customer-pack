@@ -16,6 +16,8 @@
     "typescript": "^6.0.2"
   },
   "dependencies": {
+    "@types/mongoose": "^5.11.96",
+    "mongoose": "^9.6.2",
     "winston": "^3.19.0"
   },
   "files": [
