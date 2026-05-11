@@ -32,13 +32,10 @@ var __importStar = (this && this.__importStar) || (function () {
         return result;
     };
 })();
-var __exportStar = (this && this.__exportStar) || function(m, exports) {
-    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Logs = exports.Constant = void 0;
+exports.Types = exports.Logs = exports.Constant = void 0;
 exports.Constant = __importStar(require("./constants"));
 exports.Logs = __importStar(require("./logs"));
 // types
-__exportStar(require("./types"), exports);
+exports.Types = __importStar(require("./types"));
 //# sourceMappingURL=index.js.map
