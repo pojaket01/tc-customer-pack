@@ -35,5 +35,6 @@ export interface IInvoice extends Document {
         price: number;
         totalPrice: number;
     }[];
+    remarks?: string; // หมายเหตุ (ถ้ามี)
     status: 'paid' | 'unpaid' | 'overdue';
 }

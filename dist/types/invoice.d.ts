@@ -23,6 +23,7 @@ export interface IInvoice extends Document {
         price: number;
         totalPrice: number;
     }[];
+    remarks?: string;
     status: 'paid' | 'unpaid' | 'overdue';
 }
 //# sourceMappingURL=invoice.d.ts.map
