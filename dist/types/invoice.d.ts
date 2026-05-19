@@ -7,7 +7,6 @@ export interface IInvoice extends Document {
     sellerName: string;
     reference?: string;
     projectName?: string;
-    price: number;
     discount?: number;
     totalAmount: number;
     isPaymentTerm: boolean;

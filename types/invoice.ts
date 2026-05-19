@@ -14,9 +14,8 @@ export interface IInvoice extends Document {
 
 
     //! ข้อมูลรายละเอียดของใบแจ้งหนี้
-    price: number; // รวมเป็นเงินทั้งหมด
     discount?: number; // ส่วนลด (ถ้ามี)
-    totalAmount: number; // จำนวนเงินหลังหักส่วนลด (ถ้ามี)
+    totalAmount: number; // ยอดชำระสุทธิ
 
     isPaymentTerm: boolean; // แบ่งชำระเป็นงวดหรือไม่
     paymentTermsAmount?: number; // จำนวนเงินที่ต้องชำระในแต่ละงวด (ถ้าแบ่งชำระเป็นงวด)
