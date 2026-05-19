@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <div style="margin: 5rem;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 2rem; width: 100%;">
+            <!-- Left section: Company info -->
+            <div style="grid-column: 1 / 2;">
+                <div>
+                    <h3 style="margin: 0px;">บริษัท ยี่ซู่ จวงชื่อ ชางมาว จำกัด</h3>
+                    <div style="margin-top: 1rem;">
+                        <div style="display: flex; margin: 0.5rem 0; line-height: 1.5;">
+                            <p style="margin: 0px; min-width: 120px;">Your address :</p>
+                            <p style="margin: 0px">190/48 หมู่ที่ 8 ตำบลในคลองบางปลากด <br />อำเภอพระสมุทรเจดีย์
+                                จังหวัดสมุทรปราการ 10290</p>
+                        </div>
+                        <div style="display: flex; margin: 0.5rem 0; line-height: 1.5;">
+                            <p style="margin: 0px; min-width: 120px;">Tax id :</p>
+                            <p style="margin: 0px">0105568084385 สำนักงานใหญ่</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right section: Topic -->
+            <div style="grid-column: 3 / 4; text-align: right;">
+                <div>
+                    <!-- topic -->
+                    <div style="background-color: #eb9fed; padding: 0.75rem; clip-path: polygon(30px 0, 100% 0, 100% 100%, 30px 100%, 0 50%); text-align: center;">
+                        <h3 style="margin: 0px;">ใบเสร็จรับเงิน/ใบกำกับภาษี</h3>
+                        <h5 style="margin: 0px;">RECEIPT / TAX INVOICE</h5>
+                    </div>
+                    <!-- topic -->
+                    
+                    <!-- ต้นฉบับ หรือ สำหรับลูกค้า ใช้ mustache -->
+                    <div style="margin-top: 1rem;">
+                        <b>{{forWho}}</b>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
