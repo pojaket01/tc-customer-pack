@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && npm run copy-templates",
+    "copy-templates": "copyfiles -u 1 \"generate/pdf/template/**/*.html\" dist/",
     "prepare": "npm run build"
   },
   "keywords": [],
@@ -15,6 +16,7 @@
     "@types/moment": "^2.11.29",
     "@types/mustache": "^4.2.6",
     "@types/node": "^25.5.0",
+    "copyfiles": "^2.4.1",
     "typescript": "^6.0.2"
   },
   "dependencies": {

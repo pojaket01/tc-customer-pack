@@ -89,8 +89,30 @@ function buildDataFromInvoiceData(invoice) {
     return result;
 }
 function renderInvoiceHTML(data) {
-    const templatePath = path_1.default.join(__dirname, 'template', 'template-invoice.html');
-    const template = fs_1.default.readFileSync(templatePath, 'utf-8');
+    // ลองหา template ในตำแหน่งต่างๆ
+    const possiblePaths = [
+        // สำหรับเมื่อ run จากไฟล์ TypeScript
+        path_1.default.join(__dirname, 'template', 'template-invoice.html'),
+        // สำหรับเมื่อ build เป็น JavaScript ใน dist
+        path_1.default.join(__dirname, '..', '..', 'template', 'template-invoice.html'),
+        // สำหรับเมื่อ install เป็น package ใน node_modules
+        path_1.default.resolve(__dirname, '../../..', 'template/pdf/template-invoice.html'),
+    ];
+    let template = '';
+    for (const templatePath of possiblePaths) {
+        try {
+            if (fs_1.default.existsSync(templatePath)) {
+                template = fs_1.default.readFileSync(templatePath, 'utf-8');
+                break;
+            }
+        }
+        catch (err) {
+            continue;
+        }
+    }
+    if (!template) {
+        throw new Error(`Template file not found. Tried: ${possiblePaths.join(', ')}`);
+    }
     return mustache_1.default.render(template, data);
 }
 function convertNumberToThaiWords(num) {
