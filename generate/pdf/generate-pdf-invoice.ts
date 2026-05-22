@@ -123,31 +123,9 @@ function buildDataFromInvoiceData(invoice: IInvoice): TGenerateInvoicePDF[] {
 }
 
 function renderInvoiceHTML(data: TGenerateInvoicePDF): string {
-    // ลองหา template ในตำแหน่งต่างๆ
-    const possiblePaths = [
-        // สำหรับเมื่อ run จากไฟล์ TypeScript
-        path.join(__dirname, 'template', 'template-invoice.html'),
-        // สำหรับเมื่อ build เป็น JavaScript ใน dist
-        path.join(__dirname, '..', '..', 'template', 'template-invoice.html'),
-        // สำหรับเมื่อ install เป็น package ใน node_modules
-        path.resolve(__dirname, '../../..', 'template/pdf/template-invoice.html'),
-    ]
-
-    let template = ''
-    for (const templatePath of possiblePaths) {
-        try {
-            if (fs.existsSync(templatePath)) {
-                template = fs.readFileSync(templatePath, 'utf-8')
-                break
-            }
-        } catch (err) {
-            continue
-        }
-    }
-
-    if (!template) {
-        throw new Error(`Template file not found. Tried: ${possiblePaths.join(', ')}`)
-    }
+    const templatePath = path.join(__dirname, 'template', 'template-invoice.html')
+    console.log("🚀 ~ templatePath:", templatePath)
+    const template = fs.readFileSync(templatePath, 'utf-8')
 
     return Mustache.render(template, data)
 }
