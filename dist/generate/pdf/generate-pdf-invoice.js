@@ -11,40 +11,20 @@ const moment_1 = __importDefault(require("moment"));
 const mustache_1 = __importDefault(require("mustache"));
 async function generateInvoicePDF(invoice) {
     // สร้าง PDF โดยใช้ข้อมูลจาก invoice
-    // ตัวอย่างการใช้ puppeteer
-    // ในที่นี้จะเป็นเพียงตัวอย่างโครงสร้างเท่านั้น
-    // โครงสร้าง Mustache
-    /**
-     * {
-     *  forWho: string; // ใบแจ้งหนี้สำหรับใคร ex ต้นฉบับ/สำเนา
-     *  items: {
-     *      no: number; // ลำดับ
-     *      description: string; // รายละเอียดสินค้า/บริการ
-     *      quantity: number; // จำนวน
-     *      quantityUnit: string; // หน่วยนับ
-     *      price: number; // ราคาต่อหน่วย
-     *      totalPrice: number; // ราคารวม (quantity * price)
-     * },
-     * totalPrice: number; // ราคารวมทั้งสิน
-     * vat: number; // ภาษีมูลค่าเพิ่ม
-     * netTotalPrice: number; // ราคารวมทั้งสิน + ภาษี
-     * netTotalPriceInWords: string; // ราคารวมทั้งสินเป็นตัวอักษร ex "หนึ่งพันบาทถ้วน"
-     * withholdingTax: number; // ภาษีหัก ณ ที่จ่าย
-     * remark: string; // หมายเหตุ
-     * }
-     */
     const data = buildDataFromInvoiceData(invoice);
     const browser = await puppeteer_1.default.launch();
-    // สร้าง PDF 2 หน้าตามจำนวน forWho (ต้นฉบับ/สำเนา)
-    const pdfBuffers = [];
-    for (const d of data) {
-        const page = await browser.newPage();
-        // สร้าง HTML จาก Mustache template และ data
-        const renderedHTML = renderInvoiceHTML(d);
-        await page.setContent(renderedHTML);
-        const pdfBuffer = await page.pdf();
-        pdfBuffers.push(Buffer.from(pdfBuffer));
+    const page = await browser.newPage();
+    // สร้าง HTML ทั้ง 2 หน้า (ต้นฉบับ/สำเนา) พร้อมกัน
+    let fullHTML = '';
+    for (let i = 0; i < data.length; i++) {
+        fullHTML += renderInvoiceHTML(data[i]);
+        // เพิ่ม page break ระหว่างหน้า ยกเว้นหน้าสุดท้าย
+        if (i < data.length - 1) {
+            fullHTML += '<div style="page-break-after: always;"></div>';
+        }
     }
+    await page.setContent(fullHTML);
+    const pdfBuffer = await page.pdf();
     await browser.close();
     const timestamp = (0, moment_1.default)().format('DDMMYYYYHHmmss');
     const filePath = path_1.default.join('E:/Storage/Invoice', `${timestamp}.pdf`);
@@ -52,7 +32,7 @@ async function generateInvoicePDF(invoice) {
     if (!fs_1.default.existsSync('E:/Storage/Invoice')) {
         fs_1.default.mkdirSync('E:/Storage/Invoice', { recursive: true });
     }
-    fs_1.default.writeFileSync(filePath, Buffer.concat(pdfBuffers));
+    fs_1.default.writeFileSync(filePath, Buffer.from(pdfBuffer));
     return filePath;
 }
 function buildDataFromInvoiceData(invoice) {

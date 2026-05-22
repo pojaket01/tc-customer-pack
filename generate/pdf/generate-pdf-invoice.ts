@@ -32,44 +32,23 @@ type TGenerateInvoicePDF = {
 
 async function generateInvoicePDF(invoice: IInvoice): Promise<any> {
     // สร้าง PDF โดยใช้ข้อมูลจาก invoice
-    // ตัวอย่างการใช้ puppeteer
-    // ในที่นี้จะเป็นเพียงตัวอย่างโครงสร้างเท่านั้น
-
-    // โครงสร้าง Mustache
-    /**
-     * {
-     *  forWho: string; // ใบแจ้งหนี้สำหรับใคร ex ต้นฉบับ/สำเนา
-     *  items: {
-     *      no: number; // ลำดับ
-     *      description: string; // รายละเอียดสินค้า/บริการ
-     *      quantity: number; // จำนวน
-     *      quantityUnit: string; // หน่วยนับ
-     *      price: number; // ราคาต่อหน่วย
-     *      totalPrice: number; // ราคารวม (quantity * price)
-     * },
-     * totalPrice: number; // ราคารวมทั้งสิน
-     * vat: number; // ภาษีมูลค่าเพิ่ม
-     * netTotalPrice: number; // ราคารวมทั้งสิน + ภาษี
-     * netTotalPriceInWords: string; // ราคารวมทั้งสินเป็นตัวอักษร ex "หนึ่งพันบาทถ้วน"
-     * withholdingTax: number; // ภาษีหัก ณ ที่จ่าย
-     * remark: string; // หมายเหตุ
-     * }
-     */
-
     const data = buildDataFromInvoiceData(invoice)
 
     const browser = await puppeteer.launch()
+    const page = await browser.newPage()
 
-    // สร้าง PDF 2 หน้าตามจำนวน forWho (ต้นฉบับ/สำเนา)
-    const pdfBuffers: Buffer[] = []
-    for (const d of data) {
-        const page = await browser.newPage()
-        // สร้าง HTML จาก Mustache template และ data
-        const renderedHTML = renderInvoiceHTML(d)
-        await page.setContent(renderedHTML)
-        const pdfBuffer = await page.pdf()
-        pdfBuffers.push(Buffer.from(pdfBuffer))
+    // สร้าง HTML ทั้ง 2 หน้า (ต้นฉบับ/สำเนา) พร้อมกัน
+    let fullHTML = ''
+    for (let i = 0; i < data.length; i++) {
+        fullHTML += renderInvoiceHTML(data[i]!)
+        // เพิ่ม page break ระหว่างหน้า ยกเว้นหน้าสุดท้าย
+        if (i < data.length - 1) {
+            fullHTML += '<div style="page-break-after: always;"></div>'
+        }
     }
+
+    await page.setContent(fullHTML)
+    const pdfBuffer = await page.pdf()
     await browser.close()
 
     const timestamp = moment().format('DDMMYYYYHHmmss')
@@ -79,7 +58,7 @@ async function generateInvoicePDF(invoice: IInvoice): Promise<any> {
         fs.mkdirSync('E:/Storage/Invoice', { recursive: true })
     }
 
-    fs.writeFileSync(filePath, Buffer.concat(pdfBuffers))
+    fs.writeFileSync(filePath, Buffer.from(pdfBuffer))
     return filePath
 }
 
@@ -124,7 +103,6 @@ function buildDataFromInvoiceData(invoice: IInvoice): TGenerateInvoicePDF[] {
 
 function renderInvoiceHTML(data: TGenerateInvoicePDF): string {
     const templatePath = path.join(__dirname, 'template', 'template-invoice.html')
-    console.log("🚀 ~ templatePath:", templatePath)
     const template = fs.readFileSync(templatePath, 'utf-8')
 
     return Mustache.render(template, data)
