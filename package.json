@@ -13,6 +13,7 @@
   "type": "commonjs",
   "devDependencies": {
     "@types/moment": "^2.11.29",
+    "@types/mustache": "^4.2.6",
     "@types/node": "^25.5.0",
     "typescript": "^6.0.2"
   },

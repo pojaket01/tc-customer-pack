@@ -1,0 +1,1 @@
+export { generateInvoicePDF } from './pdf/generate-pdf-invoice'
