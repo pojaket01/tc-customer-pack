@@ -11,8 +11,10 @@ export interface IInvoice extends Document {
     discount?: number;
     totalAmount: number;
     isPaymentTerm: boolean;
-    paymentTermsAmount?: number;
-    paymentTermsPercentage?: number;
+    paymentTermDetails?: {
+        dueDate: Date;
+        amount: number;
+    }[];
     taxPercentage?: number;
     taxAmount?: number;
     amountDue: number;

@@ -182,9 +182,19 @@
             </tr>
             <tr>
                 <td style="color: #1b7d34;">ยอดชำระ</td>
-                <td style="text-align: right;">{{netTotalPrice}}</td>
+                <td style="text-align: right;">{{totalAmount}}</td>
             </tr>
         </table>
+
+        {{#isPaymentTerm}}
+        <!-- Payment Terms -->
+        <div style="font-size: 9px; margin-bottom: 0.2in;">
+            <div style="color: #1b7d34; font-weight: bold;">เงื่อนไขการชำระเงิน</div>
+            {{#paymentTermDetails}}
+            <div>งวดที่ {{@index + 1}} - วันที่ครบกำหนด: {{dueDate}} - จำนวนเงิน: {{amount}}</div>
+            {{/paymentTermDetails}}
+        </div>
+        {{/isPaymentTerm}}
 
         <!-- Remark -->
         <div style="font-size: 9px; margin-bottom: 0.2in;">

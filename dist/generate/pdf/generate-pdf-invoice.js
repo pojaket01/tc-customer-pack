@@ -34,11 +34,16 @@ function buildDataFromInvoiceData(invoice) {
         price: detail.price,
         totalPrice: detail.totalPrice
     }));
+    const paymentTermDetails = invoice.paymentTermDetails ? invoice.paymentTermDetails.map(term => ({
+        dueDate: (0, moment_1.default)(term.dueDate).format('DD/MM/YYYY'),
+        amount: term.amount
+    })) : [];
     const totalPrice = invoice.totalAmount;
     const vat = invoice.taxAmount || 0;
     const netTotalPrice = totalPrice + vat;
     const netTotalPriceInWords = convertNumberToThaiWords(netTotalPrice);
-    const withholdingTax = invoice.isPaymentTerm ? (invoice.paymentTermsAmount || 0) * (invoice.paymentTermsPercentage || 0) / 100 : 0;
+    const withholdingTax = totalPrice * 0.03; // สมมติว่าภาษีหัก ณ ที่จ่ายเป็น 3% ของราคารวมทั้งสิน (สามารถปรับได้ตามจริง)
+    const totalAmount = netTotalPrice - withholdingTax;
     const remark = invoice.remarks || '';
     const invoiceTypeOptions = ['ต้นฉบับ', 'สำเนา'];
     const result = invoiceTypeOptions.map((f, index) => ({
@@ -57,7 +62,10 @@ function buildDataFromInvoiceData(invoice) {
         netTotalPrice,
         netTotalPriceInWords,
         withholdingTax,
+        totalAmount,
         remark,
+        isPaymentTerm: invoice.isPaymentTerm,
+        paymentTermDetails: paymentTermDetails,
         // needsPageBreak: index < invoiceTypeOptions.length - 1 // Add page break for all except last
     }));
     return result;

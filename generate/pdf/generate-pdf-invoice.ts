@@ -14,6 +14,11 @@ type Items = {
     totalPrice: number // ราคารวม (quantity * price)
 }
 
+type PaymentTermDetail = {
+    dueDate: string // วันที่ครบกำหนดของแต่ละงวด
+    amount: number // จำนวนเงินที่ต้องชำระในแต่ละงวด
+}
+
 type TGenerateInvoicePDF = {
     logo: string // URL หรือ path ของโลโก้บริษัท
     invoiceType: string // ใบแจ้งหนี้สำหรับใคร ex ต้นฉบับ/สำเนา
@@ -25,11 +30,14 @@ type TGenerateInvoicePDF = {
     customerTaxId: string // เลขประจำตัวผู้เสียภาษีลูกค้า
     sellerName: string // ชื่อผู้ขาย
     items: Items[],
+    isPaymentTerm: boolean // แบ่งชำระเป็นงวดหรือไม่
+    paymentTermDetails: PaymentTermDetail[]
     totalPrice: number // ราคารวมทั้งสิน
     vat: number // ภาษีมูลค่าเพิ่ม
     netTotalPrice: number // ราคารวมทั้งสิน + ภาษี
     netTotalPriceInWords: string // ราคารวมทั้งสินเป็นตัวอักษร ex "หนึ่งพันบาทถ้วน"
     withholdingTax: number // ภาษีหัก ณ ที่จ่าย
+    totalAmount: number // ยอดชำระ (ราคารวมทั้งสิน + ภาษี - ภาษีหัก ณ ที่จ่าย)
     remark: string // หมายเหตุ
     needsPageBreak?: boolean // Flag to add page break after this invoice
 }
@@ -43,14 +51,14 @@ async function generateInvoicePDF(invoice: IInvoice): Promise<Buffer> {
 
     // สร้าง HTML ทั้ง 2 หน้า (ต้นฉบับ/สำเนา) พร้อมกัน
     let fullHTML = ''
-    
-        fullHTML += renderInvoiceHTML(data)
+
+    fullHTML += renderInvoiceHTML(data)
     // for (let i = 0; i < data.length; i++) {
     //     fullHTML += renderInvoiceHTML(data[i]!)
     // }
 
     await page.setContent(fullHTML)
-    const pdfData = await page.pdf({printBackground: true})
+    const pdfData = await page.pdf({ printBackground: true })
     await browser.close()
 
     return Buffer.from(pdfData)
@@ -67,11 +75,17 @@ function buildDataFromInvoiceData(invoice: IInvoice): TGenerateInvoicePDF[] {
         totalPrice: detail.totalPrice
     }))
 
+    const paymentTermDetails: PaymentTermDetail[] = invoice.paymentTermDetails ? invoice.paymentTermDetails.map(term => ({
+        dueDate: moment(term.dueDate).format('DD/MM/YYYY'),
+        amount: term.amount
+    })) : []
+
     const totalPrice = invoice.totalAmount
     const vat = invoice.taxAmount || 0
     const netTotalPrice = totalPrice + vat
     const netTotalPriceInWords = convertNumberToThaiWords(netTotalPrice)
-    const withholdingTax = invoice.isPaymentTerm ? (invoice.paymentTermsAmount || 0) * (invoice.paymentTermsPercentage || 0) / 100 : 0
+    const withholdingTax = totalPrice * 0.03 // สมมติว่าภาษีหัก ณ ที่จ่ายเป็น 3% ของราคารวมทั้งสิน (สามารถปรับได้ตามจริง)
+    const totalAmount = netTotalPrice - withholdingTax
     const remark = invoice.remarks || ''
 
     const invoiceTypeOptions: string[] = ['ต้นฉบับ', 'สำเนา']
@@ -92,7 +106,10 @@ function buildDataFromInvoiceData(invoice: IInvoice): TGenerateInvoicePDF[] {
         netTotalPrice,
         netTotalPriceInWords,
         withholdingTax,
+        totalAmount,
         remark,
+        isPaymentTerm: invoice.isPaymentTerm,
+        paymentTermDetails: paymentTermDetails,
         // needsPageBreak: index < invoiceTypeOptions.length - 1 // Add page break for all except last
     }))
 
@@ -103,13 +120,13 @@ function renderInvoiceHTML(data: TGenerateInvoicePDF[]): string {
     const templatePath = path.join(__dirname, 'template', 'template-invoice.html')
     const template = fs.readFileSync(templatePath, 'utf-8')
 
-    let html = Mustache.render(template, {pages: data})
-    
+    let html = Mustache.render(template, { pages: data })
+
     // Add page break BEFORE invoice if flag is set (for all except first page)
     // if (data.needsPageBreak) {
     //     html = '<div style="page-break-before: always;"></div>' + html
     // }
-    
+
     return html
 }
 

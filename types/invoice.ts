@@ -21,8 +21,10 @@ export interface IInvoice extends Document {
     totalAmount: number; // ยอดชำระสุทธิ
 
     isPaymentTerm: boolean; // แบ่งชำระเป็นงวดหรือไม่
-    paymentTermsAmount?: number; // จำนวนเงินที่ต้องชำระในแต่ละงวด (ถ้าแบ่งชำระเป็นงวด)
-    paymentTermsPercentage?: number; // คิดเป็นกี่เปอร์เซ็นต์ของจำนวนเงินทั้งหมด (ถ้าแบ่งชำระเป็นงวด)
+    paymentTermDetails?: {
+        dueDate: Date; // วันที่ครบกำหนดของแต่ละงวด
+        amount: number; // จำนวนเงินที่ต้องชำระในแต่ละงวด
+    }[]
 
     //! หักภาษี ณ ที่จ่าย (ถ้ามี)
     taxPercentage?: number; // อัตราภาษี
