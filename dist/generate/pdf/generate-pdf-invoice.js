@@ -20,9 +20,8 @@ async function generateInvoicePDF(invoice) {
     // for (let i = 0; i < data.length; i++) {
     //     fullHTML += renderInvoiceHTML(data[i]!)
     // }
-    console.log("🚀 ~ fullHTML:", fullHTML);
     await page.setContent(fullHTML);
-    const pdfData = await page.pdf();
+    const pdfData = await page.pdf({ printBackground: true });
     await browser.close();
     return Buffer.from(pdfData);
 }
@@ -43,11 +42,14 @@ function buildDataFromInvoiceData(invoice) {
     const remark = invoice.remarks || '';
     const invoiceTypeOptions = ['ต้นฉบับ', 'สำเนา'];
     const result = invoiceTypeOptions.map((f, index) => ({
+        logo: __dirname + '/images/YIZU_LOGO.jpg', // ใส่ path หรือ URL ของโลโก้บริษัท
         invoiceType: f,
         invoiceNumber: invoice.invoiceNumber,
         invoiceDate: (0, moment_1.default)(invoice.invoiceDate).format('DD/MM/YYYY'),
-        reference: invoice.reference || '',
+        // reference: invoice.reference || '',
         customerName: invoice.customerName,
+        customerAddress: invoice.customerAddress,
+        customerTaxId: invoice.customerTaxId,
         sellerName: invoice.sellerName,
         items,
         totalPrice,

@@ -4,8 +4,9 @@ export interface IInvoice extends Document {
     invoiceDate: Date;
     dueDate: Date;
     customerName: string;
+    customerTaxId: string;
+    customerAddress: string;
     sellerName: string;
-    reference?: string;
     projectName?: string;
     discount?: number;
     totalAmount: number;

@@ -15,11 +15,14 @@ type Items = {
 }
 
 type TGenerateInvoicePDF = {
+    logo: string // URL หรือ path ของโลโก้บริษัท
     invoiceType: string // ใบแจ้งหนี้สำหรับใคร ex ต้นฉบับ/สำเนา
     invoiceNumber: string // เลขที่ใบแจ้งหนี้
     invoiceDate: string // วันที่ออกใบแจ้งหนี้
-    reference: string // อ้างอิง (ถ้ามี)
+    // reference: string // อ้างอิง (ถ้ามี)
     customerName: string // ชื่อลูกค้า
+    customerAddress: string // ที่อยู่ลูกค้า
+    customerTaxId: string // เลขประจำตัวผู้เสียภาษีลูกค้า
     sellerName: string // ชื่อผู้ขาย
     items: Items[],
     totalPrice: number // ราคารวมทั้งสิน
@@ -46,9 +49,8 @@ async function generateInvoicePDF(invoice: IInvoice): Promise<Buffer> {
     //     fullHTML += renderInvoiceHTML(data[i]!)
     // }
 
-    console.log("🚀 ~ fullHTML:", fullHTML)
     await page.setContent(fullHTML)
-    const pdfData = await page.pdf()
+    const pdfData = await page.pdf({printBackground: true})
     await browser.close()
 
     return Buffer.from(pdfData)
@@ -75,11 +77,14 @@ function buildDataFromInvoiceData(invoice: IInvoice): TGenerateInvoicePDF[] {
     const invoiceTypeOptions: string[] = ['ต้นฉบับ', 'สำเนา']
 
     const result: TGenerateInvoicePDF[] = invoiceTypeOptions.map((f, index) => ({
+        logo: __dirname + '/images/YIZU_LOGO.jpg', // ใส่ path หรือ URL ของโลโก้บริษัท
         invoiceType: f,
         invoiceNumber: invoice.invoiceNumber,
         invoiceDate: moment(invoice.invoiceDate).format('DD/MM/YYYY'),
-        reference: invoice.reference || '',
+        // reference: invoice.reference || '',
         customerName: invoice.customerName,
+        customerAddress: invoice.customerAddress,
+        customerTaxId: invoice.customerTaxId,
         sellerName: invoice.sellerName,
         items,
         totalPrice,

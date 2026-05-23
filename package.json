@@ -4,8 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "tsc && npm run copy-templates",
+    "build": "tsc && npm run copy-templates && npm run copy-images",
     "copy-templates": "copyfiles -u 1 \"generate/pdf/template/**/*.html\" dist/generate/",
+    "copy-images": "copyfiles -u 1 \"generate/images/**/*.jpg\" dist/generate/",
     "prepare": "npm run build"
   },
   "keywords": [],

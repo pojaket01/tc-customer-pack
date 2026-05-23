@@ -7,8 +7,11 @@ export interface IInvoice extends Document {
     invoiceDate: Date; // วันที่ออกใบแจ้งหนี้
     dueDate: Date; // วันที่ครบกำหนด
     customerName: string; // ชื่อลูกค้า
+    customerTaxId: string;
+    customerAddress: string;
+
     sellerName: string; // ชื่อผู้ขาย
-    reference?: string; // อ้างอิง (ถ้ามี)
+    // reference?: string; // อ้างอิง (ถ้ามี)
     projectName?: string; // ชื่องาน หรือ โครงการ (ถ้ามี)
 
 
