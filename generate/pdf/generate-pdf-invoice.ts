@@ -28,6 +28,7 @@ type TGenerateInvoicePDF = {
     netTotalPriceInWords: string // ราคารวมทั้งสินเป็นตัวอักษร ex "หนึ่งพันบาทถ้วน"
     withholdingTax: number // ภาษีหัก ณ ที่จ่าย
     remark: string // หมายเหตุ
+    needsPageBreak?: boolean // Flag to add page break after this invoice
 }
 
 async function generateInvoicePDF(invoice: IInvoice): Promise<Buffer> {
@@ -41,10 +42,6 @@ async function generateInvoicePDF(invoice: IInvoice): Promise<Buffer> {
     let fullHTML = ''
     for (let i = 0; i < data.length; i++) {
         fullHTML += renderInvoiceHTML(data[i]!)
-        // เพิ่ม page break ระหว่างหน้า ยกเว้นหน้าสุดท้าย
-        if (i < data.length - 1) {
-            fullHTML += '<div style="page-break-after: always;"></div>'
-        }
     }
 
     await page.setContent(fullHTML)
@@ -74,7 +71,7 @@ function buildDataFromInvoiceData(invoice: IInvoice): TGenerateInvoicePDF[] {
 
     const forWhoOptions: string[] = ['ต้นฉบับ', 'สำเนา']
 
-    const result: TGenerateInvoicePDF[] = forWhoOptions.map(f => ({
+    const result: TGenerateInvoicePDF[] = forWhoOptions.map((f, index) => ({
         forWho: f,
         invoiceNumber: invoice.invoiceNumber,
         invoiceDate: moment(invoice.invoiceDate).format('DD/MM/YYYY'),
@@ -87,7 +84,8 @@ function buildDataFromInvoiceData(invoice: IInvoice): TGenerateInvoicePDF[] {
         netTotalPrice,
         netTotalPriceInWords,
         withholdingTax,
-        remark
+        remark,
+        needsPageBreak: index < forWhoOptions.length - 1 // Add page break for all except last
     }))
 
     return result
@@ -97,7 +95,14 @@ function renderInvoiceHTML(data: TGenerateInvoicePDF): string {
     const templatePath = path.join(__dirname, 'template', 'template-invoice.html')
     const template = fs.readFileSync(templatePath, 'utf-8')
 
-    return Mustache.render(template, data)
+    let html = Mustache.render(template, data)
+    
+    // Add page break after if flag is set (not last page)
+    if (data.needsPageBreak) {
+        html += '<div style="page-break-after: always;"></div>'
+    }
+    
+    return html
 }
 
 function convertNumberToThaiWords(num: number): string {

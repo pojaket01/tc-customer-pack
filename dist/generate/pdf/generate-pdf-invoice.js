@@ -18,10 +18,6 @@ async function generateInvoicePDF(invoice) {
     let fullHTML = '';
     for (let i = 0; i < data.length; i++) {
         fullHTML += renderInvoiceHTML(data[i]);
-        // เพิ่ม page break ระหว่างหน้า ยกเว้นหน้าสุดท้าย
-        if (i < data.length - 1) {
-            fullHTML += '<div style="page-break-after: always;"></div>';
-        }
     }
     await page.setContent(fullHTML);
     const pdfData = await page.pdf();
@@ -44,7 +40,7 @@ function buildDataFromInvoiceData(invoice) {
     const withholdingTax = invoice.isPaymentTerm ? (invoice.paymentTermsAmount || 0) * (invoice.paymentTermsPercentage || 0) / 100 : 0;
     const remark = invoice.remarks || '';
     const forWhoOptions = ['ต้นฉบับ', 'สำเนา'];
-    const result = forWhoOptions.map(f => ({
+    const result = forWhoOptions.map((f, index) => ({
         forWho: f,
         invoiceNumber: invoice.invoiceNumber,
         invoiceDate: (0, moment_1.default)(invoice.invoiceDate).format('DD/MM/YYYY'),
@@ -57,14 +53,20 @@ function buildDataFromInvoiceData(invoice) {
         netTotalPrice,
         netTotalPriceInWords,
         withholdingTax,
-        remark
+        remark,
+        needsPageBreak: index < forWhoOptions.length - 1 // Add page break for all except last
     }));
     return result;
 }
 function renderInvoiceHTML(data) {
     const templatePath = path_1.default.join(__dirname, 'template', 'template-invoice.html');
     const template = fs_1.default.readFileSync(templatePath, 'utf-8');
-    return mustache_1.default.render(template, data);
+    let html = mustache_1.default.render(template, data);
+    // Add page break after if flag is set (not last page)
+    if (data.needsPageBreak) {
+        html += '<div style="page-break-after: always;"></div>';
+    }
+    return html;
 }
 function convertNumberToThaiWords(num) {
     // ฟังก์ชันนี้จะทำการแปลงตัวเลขเป็นคำภาษาไทย
