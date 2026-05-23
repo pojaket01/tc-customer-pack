@@ -30,7 +30,7 @@ type TGenerateInvoicePDF = {
     remark: string // หมายเหตุ
 }
 
-async function generateInvoicePDF(invoice: IInvoice): Promise<any> {
+async function generateInvoicePDF(invoice: IInvoice): Promise<Buffer> {
     // สร้าง PDF โดยใช้ข้อมูลจาก invoice
     const data = buildDataFromInvoiceData(invoice)
 
@@ -48,18 +48,10 @@ async function generateInvoicePDF(invoice: IInvoice): Promise<any> {
     }
 
     await page.setContent(fullHTML)
-    const pdfBuffer = await page.pdf()
+    const pdfData = await page.pdf()
     await browser.close()
 
-    const timestamp = moment().format('DDMMYYYYHHmmss')
-    const filePath = path.join('E:/Storage/Invoice', `${timestamp}.pdf`)
-    // เช็คว่าโฟลเดอร์ E:/Storage/Invoice มีอยู่หรือไม่ ถ้าไม่มีให้สร้างขึ้นมา
-    if (!fs.existsSync('E:/Storage/Invoice')) {
-        fs.mkdirSync('E:/Storage/Invoice', { recursive: true })
-    }
-
-    fs.writeFileSync(filePath, Buffer.from(pdfBuffer))
-    return filePath
+    return Buffer.from(pdfData)
 }
 
 function buildDataFromInvoiceData(invoice: IInvoice): TGenerateInvoicePDF[] {

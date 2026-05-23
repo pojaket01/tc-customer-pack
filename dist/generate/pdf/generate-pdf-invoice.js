@@ -24,16 +24,9 @@ async function generateInvoicePDF(invoice) {
         }
     }
     await page.setContent(fullHTML);
-    const pdfBuffer = await page.pdf();
+    const pdfData = await page.pdf();
     await browser.close();
-    const timestamp = (0, moment_1.default)().format('DDMMYYYYHHmmss');
-    const filePath = path_1.default.join('E:/Storage/Invoice', `${timestamp}.pdf`);
-    // เช็คว่าโฟลเดอร์ E:/Storage/Invoice มีอยู่หรือไม่ ถ้าไม่มีให้สร้างขึ้นมา
-    if (!fs_1.default.existsSync('E:/Storage/Invoice')) {
-        fs_1.default.mkdirSync('E:/Storage/Invoice', { recursive: true });
-    }
-    fs_1.default.writeFileSync(filePath, Buffer.from(pdfBuffer));
-    return filePath;
+    return Buffer.from(pdfData);
 }
 function buildDataFromInvoiceData(invoice) {
     const items = invoice.details.map((detail, index) => ({
