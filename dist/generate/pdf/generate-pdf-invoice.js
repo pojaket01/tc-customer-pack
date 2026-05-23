@@ -19,6 +19,7 @@ async function generateInvoicePDF(invoice) {
     for (let i = 0; i < data.length; i++) {
         fullHTML += renderInvoiceHTML(data[i]);
     }
+    console.log("🚀 ~ fullHTML:", fullHTML);
     await page.setContent(fullHTML);
     const pdfData = await page.pdf();
     await browser.close();
@@ -62,9 +63,9 @@ function renderInvoiceHTML(data) {
     const templatePath = path_1.default.join(__dirname, 'template', 'template-invoice.html');
     const template = fs_1.default.readFileSync(templatePath, 'utf-8');
     let html = mustache_1.default.render(template, data);
-    // Add page break after if flag is set (not last page)
+    // Add page break BEFORE invoice if flag is set (for all except first page)
     if (data.needsPageBreak) {
-        html += '<div style="page-break-after: always;"></div>';
+        html = '<div style="page-break-before: always;"></div>' + html;
     }
     return html;
 }
