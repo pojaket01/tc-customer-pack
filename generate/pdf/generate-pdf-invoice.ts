@@ -44,6 +44,7 @@ async function generateInvoicePDF(invoice: IInvoice): Promise<Buffer> {
         fullHTML += renderInvoiceHTML(data[i]!)
     }
 
+    console.log("🚀 ~ fullHTML:", fullHTML)
     await page.setContent(fullHTML)
     const pdfData = await page.pdf()
     await browser.close()
@@ -97,9 +98,9 @@ function renderInvoiceHTML(data: TGenerateInvoicePDF): string {
 
     let html = Mustache.render(template, data)
     
-    // Add page break after if flag is set (not last page)
+    // Add page break BEFORE invoice if flag is set (for all except first page)
     if (data.needsPageBreak) {
-        html += '<div style="page-break-after: always;"></div>'
+        html = '<div style="page-break-before: always;"></div>' + html
     }
     
     return html
