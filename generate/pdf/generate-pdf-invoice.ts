@@ -15,7 +15,7 @@ type Items = {
 }
 
 type TGenerateInvoicePDF = {
-    forWho: string // ใบแจ้งหนี้สำหรับใคร ex ต้นฉบับ/สำเนา
+    invoiceType: string // ใบแจ้งหนี้สำหรับใคร ex ต้นฉบับ/สำเนา
     invoiceNumber: string // เลขที่ใบแจ้งหนี้
     invoiceDate: string // วันที่ออกใบแจ้งหนี้
     reference: string // อ้างอิง (ถ้ามี)
@@ -40,9 +40,11 @@ async function generateInvoicePDF(invoice: IInvoice): Promise<Buffer> {
 
     // สร้าง HTML ทั้ง 2 หน้า (ต้นฉบับ/สำเนา) พร้อมกัน
     let fullHTML = ''
-    for (let i = 0; i < data.length; i++) {
-        fullHTML += renderInvoiceHTML(data[i]!)
-    }
+    
+        fullHTML += renderInvoiceHTML(data)
+    // for (let i = 0; i < data.length; i++) {
+    //     fullHTML += renderInvoiceHTML(data[i]!)
+    // }
 
     console.log("🚀 ~ fullHTML:", fullHTML)
     await page.setContent(fullHTML)
@@ -70,10 +72,10 @@ function buildDataFromInvoiceData(invoice: IInvoice): TGenerateInvoicePDF[] {
     const withholdingTax = invoice.isPaymentTerm ? (invoice.paymentTermsAmount || 0) * (invoice.paymentTermsPercentage || 0) / 100 : 0
     const remark = invoice.remarks || ''
 
-    const forWhoOptions: string[] = ['ต้นฉบับ', 'สำเนา']
+    const invoiceTypeOptions: string[] = ['ต้นฉบับ', 'สำเนา']
 
-    const result: TGenerateInvoicePDF[] = forWhoOptions.map((f, index) => ({
-        forWho: f,
+    const result: TGenerateInvoicePDF[] = invoiceTypeOptions.map((f, index) => ({
+        invoiceType: f,
         invoiceNumber: invoice.invoiceNumber,
         invoiceDate: moment(invoice.invoiceDate).format('DD/MM/YYYY'),
         reference: invoice.reference || '',
@@ -86,22 +88,22 @@ function buildDataFromInvoiceData(invoice: IInvoice): TGenerateInvoicePDF[] {
         netTotalPriceInWords,
         withholdingTax,
         remark,
-        needsPageBreak: index < forWhoOptions.length - 1 // Add page break for all except last
+        // needsPageBreak: index < invoiceTypeOptions.length - 1 // Add page break for all except last
     }))
 
     return result
 }
 
-function renderInvoiceHTML(data: TGenerateInvoicePDF): string {
+function renderInvoiceHTML(data: TGenerateInvoicePDF[]): string {
     const templatePath = path.join(__dirname, 'template', 'template-invoice.html')
     const template = fs.readFileSync(templatePath, 'utf-8')
 
-    let html = Mustache.render(template, data)
+    let html = Mustache.render(template, {pages: data})
     
     // Add page break BEFORE invoice if flag is set (for all except first page)
-    if (data.needsPageBreak) {
-        html = '<div style="page-break-before: always;"></div>' + html
-    }
+    // if (data.needsPageBreak) {
+    //     html = '<div style="page-break-before: always;"></div>' + html
+    // }
     
     return html
 }
