@@ -30,6 +30,9 @@ export interface IInvoice extends Document {
     taxPercentage?: number; // อัตราภาษี
     taxAmount?: number; // จำนวนเงินภาษีที่ต้องชำระ
 
+    withholderTaxPercentage?: number; // อัตราภาษีหักณ ที่จ่าย
+    withholderTaxAmount?: number; // จำนวนเงินภาษีหักณ ที่จ่าย
+
     //! ยอดชำระ (จำนวนเงินรวมทั้งสิน - (จำนวนเงินรวมทั้งสิน * ภาษี))
     amountDue: number;
     details: {

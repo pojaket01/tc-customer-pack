@@ -17,6 +17,8 @@ export interface IInvoice extends Document {
     }[];
     taxPercentage?: number;
     taxAmount?: number;
+    withholderTaxPercentage?: number;
+    withholderTaxAmount?: number;
     amountDue: number;
     details: {
         description: string;
