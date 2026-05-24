@@ -15,6 +15,7 @@ type Items = {
 }
 
 type PaymentTermDetail = {
+    no: number
     percentage: number // เปอร์เซ็นต์ของยอดชำระสุทธิ
     amount: string // จำนวนเงินที่คำนวณจากเปอร์เซ็นต์
 }
@@ -79,7 +80,8 @@ function buildDataFromInvoiceData(invoice: IInvoice): TGenerateInvoicePDF[] {
     const vat = invoice.taxAmount || 0
     const baseAmount = invoice.totalAmount - vat
     
-    const paymentTermDetails: PaymentTermDetail[] = invoice.paymentTermDetails ? invoice.paymentTermDetails.map(term => ({
+    const paymentTermDetails: PaymentTermDetail[] = invoice.paymentTermDetails ? invoice.paymentTermDetails.map((term, index) => ({
+        no: index + 1,
         percentage: term.percentage,
         amount: currencySymbol((invoice.amountDue * term.percentage) / 100)
     })) : []

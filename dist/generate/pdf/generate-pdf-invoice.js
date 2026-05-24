@@ -37,7 +37,8 @@ function buildDataFromInvoiceData(invoice) {
     // คำนวณฐาน = totalAmount - VAT (เพราะ totalAmount แล้วรวม VAT)
     const vat = invoice.taxAmount || 0;
     const baseAmount = invoice.totalAmount - vat;
-    const paymentTermDetails = invoice.paymentTermDetails ? invoice.paymentTermDetails.map(term => ({
+    const paymentTermDetails = invoice.paymentTermDetails ? invoice.paymentTermDetails.map((term, index) => ({
+        no: index + 1,
         percentage: term.percentage,
         amount: currencySymbol((invoice.amountDue * term.percentage) / 100)
     })) : [];
