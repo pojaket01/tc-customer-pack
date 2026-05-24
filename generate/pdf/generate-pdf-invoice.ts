@@ -75,14 +75,17 @@ function buildDataFromInvoiceData(invoice: IInvoice): TGenerateInvoicePDF[] {
         totalPrice: currencySymbol(detail.totalPrice)
     }))
 
+    // คำนวณฐาน = totalAmount - VAT (เพราะ totalAmount แล้วรวม VAT)
+    const vat = invoice.taxAmount || 0
+    const baseAmount = invoice.totalAmount - vat
+    
     const paymentTermDetails: PaymentTermDetail[] = invoice.paymentTermDetails ? invoice.paymentTermDetails.map(term => ({
         percentage: term.percentage,
         amount: currencySymbol((invoice.amountDue * term.percentage) / 100)
     })) : []
 
-    const totalPrice = invoice.totalAmount
-    const vat = invoice.taxAmount || 0
-    const netTotalPrice = totalPrice + vat
+    const totalPrice = baseAmount  // รวมเป็นเงิน = ฐาน (ก่อน VAT)
+    const netTotalPrice = invoice.totalAmount  // รวมทั้งสิ้น = ฐาน + VAT = totalAmount
     const netTotalPriceInWords = convertNumberToThaiWords(netTotalPrice)
     const withholdingTax = invoice.withholderTaxAmount || 0
     const totalAmount = invoice.amountDue

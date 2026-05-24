@@ -31,19 +31,21 @@ function buildDataFromInvoiceData(invoice) {
         description: detail.description,
         quantity: detail.quantity,
         quantityUnit: detail.quantityUnit,
-        price: detail.price,
-        totalPrice: detail.totalPrice
+        price: currencySymbol(detail.price),
+        totalPrice: currencySymbol(detail.totalPrice)
     }));
-    const paymentTermDetails = invoice.paymentTermDetails ? invoice.paymentTermDetails.map(term => ({
-        dueDate: (0, moment_1.default)(term.dueDate).format('DD/MM/YYYY'),
-        amount: term.amount
-    })) : [];
-    const totalPrice = invoice.totalAmount;
+    // คำนวณฐาน = totalAmount - VAT (เพราะ totalAmount แล้วรวม VAT)
     const vat = invoice.taxAmount || 0;
-    const netTotalPrice = totalPrice + vat;
+    const baseAmount = invoice.totalAmount - vat;
+    const paymentTermDetails = invoice.paymentTermDetails ? invoice.paymentTermDetails.map(term => ({
+        percentage: term.percentage,
+        amount: currencySymbol((invoice.amountDue * term.percentage) / 100)
+    })) : [];
+    const totalPrice = baseAmount; // รวมเป็นเงิน = ฐาน (ก่อน VAT)
+    const netTotalPrice = invoice.totalAmount; // รวมทั้งสิ้น = ฐาน + VAT = totalAmount
     const netTotalPriceInWords = convertNumberToThaiWords(netTotalPrice);
-    const withholdingTax = totalPrice * 0.03; // สมมติว่าภาษีหัก ณ ที่จ่ายเป็น 3% ของราคารวมทั้งสิน (สามารถปรับได้ตามจริง)
-    const totalAmount = netTotalPrice - withholdingTax;
+    const withholdingTax = invoice.withholderTaxAmount || 0;
+    const totalAmount = invoice.amountDue;
     const remark = invoice.remarks || '';
     const invoiceTypeOptions = ['ต้นฉบับ', 'สำเนา'];
     const result = invoiceTypeOptions.map((f, index) => ({
@@ -57,12 +59,12 @@ function buildDataFromInvoiceData(invoice) {
         customerTaxId: invoice.customerTaxId,
         sellerName: invoice.sellerName,
         items,
-        totalPrice,
-        vat,
-        netTotalPrice,
+        totalPrice: currencySymbol(totalPrice),
+        vat: currencySymbol(vat, ''),
+        netTotalPrice: currencySymbol(netTotalPrice, ''),
         netTotalPriceInWords,
-        withholdingTax,
-        totalAmount,
+        withholdingTax: currencySymbol(withholdingTax, ''),
+        totalAmount: currencySymbol(totalAmount),
         remark,
         isPaymentTerm: invoice.isPaymentTerm,
         paymentTermDetails: paymentTermDetails,
@@ -165,5 +167,11 @@ function convertNumberToThaiWords(num) {
         result += thaiDigits[digit];
     }
     return result + 'บาทถ้วน';
+}
+function formatCurrency(amount) {
+    return amount.toLocaleString(); // output เช่น  "1,000.00"
+}
+function currencySymbol(amount, symbol = 'บาท') {
+    return `${formatCurrency(amount)} ${symbol}`;
 }
 //# sourceMappingURL=generate-pdf-invoice.js.map
