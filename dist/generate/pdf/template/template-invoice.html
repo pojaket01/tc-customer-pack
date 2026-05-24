@@ -166,13 +166,12 @@
                     <td style="color: #1b7d34;">ภาษีมูลค่าเพิ่ม (7%)</td>
                     <td style="text-align: right;">{{vat}}</td>
                 </tr>
-                <tr style="border-top: 2px solid #000; border-bottom: 2px solid #000; font-weight: bold;">
+                <tr>
                     <td style="color: #1b7d34;">รวมทั้งสิ้น</td>
                     <td style="text-align: right;">{{netTotalPrice}}</td>
                 </tr>
             </table>
         </div>
-        <div style="text-align: left; font-size: 9px; margin-bottom: 0.1in;"><em>({{netTotalPriceInWords}})</em></div>
 
         <!-- Withholding Tax -->
         <table style="width: 100%; margin-left: auto; width: 45%; font-size: 9px; margin-bottom: 0.2in;">
@@ -180,11 +179,12 @@
                 <td style="color: #1b7d34;">หักภาษี ณ ที่จ่าย 3%</td>
                 <td style="text-align: right;">{{withholdingTax}}</td>
             </tr>
-            <tr>
+            <tr style="border-top: 2px solid #000; border-bottom: 2px solid #000; font-weight: bold;">
                 <td style="color: #1b7d34;">ยอดชำระ</td>
                 <td style="text-align: right;">{{totalAmount}}</td>
             </tr>
         </table>
+        <div style="text-align: left; font-size: 9px; margin-bottom: 0.1in;"><em>({{netTotalPriceInWords}})</em></div>
 
         {{#isPaymentTerm}}
         <!-- Payment Terms -->
