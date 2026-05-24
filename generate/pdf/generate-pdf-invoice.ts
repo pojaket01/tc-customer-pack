@@ -67,6 +67,19 @@ async function generateInvoicePDF(invoice: IInvoice): Promise<Buffer> {
 
 function buildDataFromInvoiceData(invoice: IInvoice): TGenerateInvoicePDF[] {
 
+    // Helper function to convert logo to base64 data URL
+    const getLogoAsDataUrl = (): string => {
+        try {
+            const logoPath = path.join(__dirname, 'images', 'YIZU_LOGO.jpg')
+            const imageBuffer = fs.readFileSync(logoPath)
+            const base64 = imageBuffer.toString('base64')
+            return `data:image/jpeg;base64,${base64}`
+        } catch (error) {
+            console.error('Error reading logo:', error)
+            return ''
+        }
+    }
+
     const items: Items[] = invoice.details.map((detail, index) => ({
         no: index + 1,
         description: detail.description,
@@ -96,7 +109,7 @@ function buildDataFromInvoiceData(invoice: IInvoice): TGenerateInvoicePDF[] {
     const invoiceTypeOptions: string[] = ['ต้นฉบับ', 'สำเนา']
 
     const result: TGenerateInvoicePDF[] = invoiceTypeOptions.map((f, index) => ({
-        logo: __dirname + '/images/YIZU_LOGO.jpg', // ใส่ path หรือ URL ของโลโก้บริษัท
+        logo: getLogoAsDataUrl(),
         invoiceType: f,
         invoiceNumber: invoice.invoiceNumber,
         invoiceDate: moment(invoice.invoiceDate).format('DD/MM/YYYY'),

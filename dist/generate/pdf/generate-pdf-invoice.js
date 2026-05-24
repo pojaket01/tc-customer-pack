@@ -26,6 +26,19 @@ async function generateInvoicePDF(invoice) {
     return Buffer.from(pdfData);
 }
 function buildDataFromInvoiceData(invoice) {
+    // Helper function to convert logo to base64 data URL
+    const getLogoAsDataUrl = () => {
+        try {
+            const logoPath = path_1.default.join(__dirname, 'images', 'YIZU_LOGO.jpg');
+            const imageBuffer = fs_1.default.readFileSync(logoPath);
+            const base64 = imageBuffer.toString('base64');
+            return `data:image/jpeg;base64,${base64}`;
+        }
+        catch (error) {
+            console.error('Error reading logo:', error);
+            return '';
+        }
+    };
     const items = invoice.details.map((detail, index) => ({
         no: index + 1,
         description: detail.description,
@@ -50,7 +63,7 @@ function buildDataFromInvoiceData(invoice) {
     const remark = invoice.remarks || '';
     const invoiceTypeOptions = ['ต้นฉบับ', 'สำเนา'];
     const result = invoiceTypeOptions.map((f, index) => ({
-        logo: __dirname + '/images/YIZU_LOGO.jpg', // ใส่ path หรือ URL ของโลโก้บริษัท
+        logo: getLogoAsDataUrl(),
         invoiceType: f,
         invoiceNumber: invoice.invoiceNumber,
         invoiceDate: (0, moment_1.default)(invoice.invoiceDate).format('DD/MM/YYYY'),
