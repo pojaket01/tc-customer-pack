@@ -70,8 +70,31 @@ function buildDataFromInvoiceData(invoice: IInvoice): TGenerateInvoicePDF[] {
     // Helper function to convert logo to base64 data URL
     const getLogoAsDataUrl = (): string => {
         try {
-            const logoPath = path.join(__dirname, 'images', 'YIZU_LOGO.jpg')
-            const imageBuffer = fs.readFileSync(logoPath)
+            // อ่าน logo จากหลาย path เป็นความพยายาม
+            const possiblePaths = [
+                // Development (source)
+                path.join(__dirname, 'images', 'YIZU_LOGO.jpg'),
+                // Production (dist)
+                path.join(__dirname, '..', 'images', 'YIZU_LOGO.jpg'),
+                // From tc-customer-pack source
+                path.join(__dirname, '../../../images/YIZU_LOGO.jpg'),
+            ]
+
+            let imageBuffer: Buffer | null = null
+            for (const logoPath of possiblePaths) {
+                try {
+                    imageBuffer = fs.readFileSync(logoPath)
+                    break
+                } catch (e) {
+                    // Continue to next path
+                }
+            }
+
+            if (!imageBuffer) {
+                console.warn('Logo file not found in any of the expected paths')
+                return ''
+            }
+
             const base64 = imageBuffer.toString('base64')
             return `data:image/jpeg;base64,${base64}`
         } catch (error) {

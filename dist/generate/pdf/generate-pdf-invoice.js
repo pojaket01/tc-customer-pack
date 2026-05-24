@@ -29,8 +29,29 @@ function buildDataFromInvoiceData(invoice) {
     // Helper function to convert logo to base64 data URL
     const getLogoAsDataUrl = () => {
         try {
-            const logoPath = path_1.default.join(__dirname, 'images', 'YIZU_LOGO.jpg');
-            const imageBuffer = fs_1.default.readFileSync(logoPath);
+            // อ่าน logo จากหลาย path เป็นความพยายาม
+            const possiblePaths = [
+                // Development (source)
+                path_1.default.join(__dirname, 'images', 'YIZU_LOGO.jpg'),
+                // Production (dist)
+                path_1.default.join(__dirname, '..', 'images', 'YIZU_LOGO.jpg'),
+                // From tc-customer-pack source
+                path_1.default.join(__dirname, '../../../images/YIZU_LOGO.jpg'),
+            ];
+            let imageBuffer = null;
+            for (const logoPath of possiblePaths) {
+                try {
+                    imageBuffer = fs_1.default.readFileSync(logoPath);
+                    break;
+                }
+                catch (e) {
+                    // Continue to next path
+                }
+            }
+            if (!imageBuffer) {
+                console.warn('Logo file not found in any of the expected paths');
+                return '';
+            }
             const base64 = imageBuffer.toString('base64');
             return `data:image/jpeg;base64,${base64}`;
         }
