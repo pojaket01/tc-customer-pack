@@ -10,13 +10,13 @@ type Items = {
     description: string // รายละเอียดสินค้า/บริการ
     quantity: number // จำนวน
     quantityUnit: string // หน่วยนับ
-    price: number // ราคาต่อหน่วย
-    totalPrice: number // ราคารวม (quantity * price)
+    price: string // ราคาต่อหน่วย
+    totalPrice: string // ราคารวม (quantity * price)
 }
 
 type PaymentTermDetail = {
-    dueDate: string // วันที่ครบกำหนดของแต่ละงวด
-    amount: number // จำนวนเงินที่ต้องชำระในแต่ละงวด
+    percentage: number // เปอร์เซ็นต์ของยอดชำระสุทธิ
+    amount: string // จำนวนเงินที่คำนวณจากเปอร์เซ็นต์
 }
 
 type TGenerateInvoicePDF = {
@@ -32,12 +32,12 @@ type TGenerateInvoicePDF = {
     items: Items[],
     isPaymentTerm: boolean // แบ่งชำระเป็นงวดหรือไม่
     paymentTermDetails: PaymentTermDetail[]
-    totalPrice: number // ราคารวมทั้งสิน
-    vat: number // ภาษีมูลค่าเพิ่ม
-    netTotalPrice: number // ราคารวมทั้งสิน + ภาษี
+    totalPrice: string // ราคารวมทั้งสิน
+    vat: string // ภาษีมูลค่าเพิ่ม
+    netTotalPrice: string // ราคารวมทั้งสิน + ภาษี
     netTotalPriceInWords: string // ราคารวมทั้งสินเป็นตัวอักษร ex "หนึ่งพันบาทถ้วน"
-    withholdingTax: number // ภาษีหัก ณ ที่จ่าย
-    totalAmount: number // ยอดชำระ (ราคารวมทั้งสิน + ภาษี - ภาษีหัก ณ ที่จ่าย)
+    withholdingTax: string // ภาษีหัก ณ ที่จ่าย
+    totalAmount: string // ยอดชำระ (ราคารวมทั้งสิน + ภาษี - ภาษีหัก ณ ที่จ่าย)
     remark: string // หมายเหตุ
     needsPageBreak?: boolean // Flag to add page break after this invoice
 }
@@ -71,21 +71,21 @@ function buildDataFromInvoiceData(invoice: IInvoice): TGenerateInvoicePDF[] {
         description: detail.description,
         quantity: detail.quantity,
         quantityUnit: detail.quantityUnit,
-        price: detail.price,
-        totalPrice: detail.totalPrice
+        price: currencySymbol(detail.price),
+        totalPrice: currencySymbol(detail.totalPrice)
     }))
 
     const paymentTermDetails: PaymentTermDetail[] = invoice.paymentTermDetails ? invoice.paymentTermDetails.map(term => ({
-        dueDate: moment(term.dueDate).format('DD/MM/YYYY'),
-        amount: term.amount
+        percentage: term.percentage,
+        amount: currencySymbol((invoice.amountDue * term.percentage) / 100)
     })) : []
 
     const totalPrice = invoice.totalAmount
     const vat = invoice.taxAmount || 0
     const netTotalPrice = totalPrice + vat
     const netTotalPriceInWords = convertNumberToThaiWords(netTotalPrice)
-    const withholdingTax = totalPrice * 0.03 // สมมติว่าภาษีหัก ณ ที่จ่ายเป็น 3% ของราคารวมทั้งสิน (สามารถปรับได้ตามจริง)
-    const totalAmount = netTotalPrice - withholdingTax
+    const withholdingTax = invoice.withholderTaxAmount || 0
+    const totalAmount = invoice.amountDue
     const remark = invoice.remarks || ''
 
     const invoiceTypeOptions: string[] = ['ต้นฉบับ', 'สำเนา']
@@ -101,12 +101,12 @@ function buildDataFromInvoiceData(invoice: IInvoice): TGenerateInvoicePDF[] {
         customerTaxId: invoice.customerTaxId,
         sellerName: invoice.sellerName,
         items,
-        totalPrice,
-        vat,
-        netTotalPrice,
+        totalPrice: currencySymbol(totalPrice),
+        vat: currencySymbol(vat, ''),
+        netTotalPrice: currencySymbol(netTotalPrice, ''),
         netTotalPriceInWords,
-        withholdingTax,
-        totalAmount,
+        withholdingTax: currencySymbol(withholdingTax, ''),
+        totalAmount: currencySymbol(totalAmount),
         remark,
         isPaymentTerm: invoice.isPaymentTerm,
         paymentTermDetails: paymentTermDetails,
@@ -215,6 +215,14 @@ function convertNumberToThaiWords(num: number): string {
     }
 
     return result + 'บาทถ้วน'
+}
+
+function formatCurrency(amount: number): string {
+    return amount.toLocaleString() // output เช่น  "1,000.00"
+}
+
+function currencySymbol(amount: number, symbol: string = 'บาท'): string {
+    return `${formatCurrency(amount)} ${symbol}`
 }
 
 export { generateInvoicePDF }
