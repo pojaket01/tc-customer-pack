@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Receipt Template</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link
+    href="https://fonts.googleapis.com/css2?family=Prompt:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
+    rel="stylesheet">
+
+<style>
+    * {
+        font-family: "Prompt", sans-serif;
+        font-weight: 400;
+        font-style: normal;
+        font-size: 12px;
+        box-sizing: border-box;
+    }
+
+    body {
+        margin: 0;
+        padding: 0;
+        background-color: #FAFAFA;
+    }
+
+    .a4-page {
+        width: 794px;
+        height: 1123px;
+        padding: 0.4in;
+        margin: 0 auto 20px auto;
+        background: #ffffff;
+        display: flex;
+        flex-direction: column;
+        page-break-after: always;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    @media print {
+        body {
+            background-color: #ffffff;
+        }
+
+        .a4-page {
+            margin: 0;
+            box-shadow: none;
+            page-break-after: always;
+        }
+
+        @page {
+            size: A4 portrait;
+            margin: 0;
+        }
+    }
+
+    h3 {
+        font-size: 14px;
+    }
+
+    h5 {
+        font-size: 12px;
+    }
+
+    table {
+        font-size: 11px;
+        border-collapse: collapse;
+    }
+
+    p {
+        font-size: 12px;
+    }
+
+    .header-table,
+    .items-table,
+    .footer-table {
+        width: 100%;
+    }
+
+    .items-table th,
+    .items-table td {
+        padding: 0.15in 0.1in;
+    }
+
+    .header-section {
+        text-align: center;
+        margin-bottom: 0.3in;
+    }
+
+    .receipt-title {
+        font-size: 18px;
+        font-weight: bold;
+        margin: 0.2in 0;
+    }
+
+    .receipt-number {
+        font-size: 14px;
+        margin: 0.1in 0;
+    }
+
+    .receipt-date {
+        font-size: 11px;
+        color: #555;
+    }
+
+    .info-section {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.3in;
+    }
+
+    .info-box {
+        width: 48%;
+        font-size: 11px;
+        line-height: 1.6;
+    }
+
+    .info-label {
+        font-weight: bold;
+    }
+
+    .items-table {
+        margin-bottom: 0.2in;
+    }
+
+    .items-table thead {
+        background-color: #f0f0f0;
+    }
+
+    .items-table th {
+        border: 1px solid #ddd;
+        padding: 0.1in;
+        text-align: left;
+        font-weight: bold;
+    }
+
+    .items-table td {
+        border: 1px solid #ddd;
+        padding: 0.1in;
+    }
+
+    .text-right {
+        text-align: right;
+    }
+
+    .text-center {
+        text-align: center;
+    }
+
+    .summary-section {
+        margin-top: 0.2in;
+        font-size: 11px;
+    }
+
+    .summary-row {
+        display: flex;
+        justify-content: flex-end;
+        margin-bottom: 0.05in;
+        width: 100%;
+    }
+
+    .summary-label {
+        width: 40%;
+        text-align: right;
+    }
+
+    .summary-value {
+        width: 25%;
+        text-align: right;
+        font-weight: bold;
+    }
+
+    .total-amount {
+        border-top: 2px solid #000;
+        border-bottom: 2px solid #000;
+        padding: 0.1in 0;
+        margin: 0.1in 0;
+        font-size: 13px;
+    }
+
+    .total-amount-value {
+        font-weight: bold;
+        font-size: 14px;
+    }
+
+    .payment-info {
+        margin-top: 0.2in;
+        font-size: 11px;
+        line-height: 1.6;
+    }
+
+    .payment-info-label {
+        font-weight: bold;
+    }
+
+    .remark-section {
+        margin-top: 0.2in;
+        font-size: 11px;
+        border-top: 1px solid #ddd;
+        padding-top: 0.1in;
+    }
+
+    .remark-label {
+        font-weight: bold;
+    }
+
+    .signature-section {
+        margin-top: 0.3in;
+        display: flex;
+        justify-content: space-between;
+        font-size: 10px;
+    }
+
+    .signature-box {
+        width: 30%;
+        text-align: center;
+        border-top: 1px solid #000;
+        padding-top: 0.5in;
+    }
+</style>
+
+<body>
+    {{#pages}}
+    <div class="a4-page">
+        
+        <!-- Header Section -->
+        <div class="header-section">
+            <div class="receipt-title">ใบเสร็จรับเงิน</div>
+            <div class="receipt-number">เลขที่: {{receiptNumber}}</div>
+            <div class="receipt-date">วันที่: {{receiptDate}}</div>
+        </div>
+
+        <!-- Customer & Seller Info -->
+        <div class="info-section">
+            <div class="info-box">
+                <div class="info-label">ชื่อผู้บันทึก:</div>
+                <div>{{sellerName}}</div>
+                <div style="margin-top: 0.15in;">
+                    <div class="info-label">ลูกค้า:</div>
+                    <div>{{customerName}}</div>
+                    <div>{{customerAddress}}</div>
+                    <div>เลขประจำตัวผู้เสียภาษี: {{customerTaxId}}</div>
+                </div>
+            </div>
+            <div class="info-box" style="text-align: right;">
+                <div style="margin-bottom: 0.15in;">
+                    <div class="info-label">เลขอ้างอิง:</div>
+                    <div>{{referenceNumber}}</div>
+                </div>
+                <div>
+                    <div class="info-label">วิธีชำระเงิน:</div>
+                    <div>{{paymentMethod}}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Items Table -->
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th style="width: 5%;">ลำดับ</th>
+                    <th style="width: 45%;">รายการ</th>
+                    <th style="width: 12%;" class="text-center">จำนวน</th>
+                    <th style="width: 12%;" class="text-right">ราคาต่อหน่วย</th>
+                    <th style="width: 18%;" class="text-right">จำนวนเงิน</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#items}}
+                <tr>
+                    <td class="text-center">{{no}}</td>
+                    <td>{{description}}</td>
+                    <td class="text-center">{{quantity}} {{quantityUnit}}</td>
+                    <td class="text-right">{{price}}</td>
+                    <td class="text-right">{{totalPrice}}</td>
+                </tr>
+                {{/items}}
+            </tbody>
+        </table>
+
+        <!-- Summary Section -->
+        <div class="summary-section">
+            <div class="summary-row">
+                <div class="summary-label">ราคารวมทั้งสิน:</div>
+                <div class="summary-value">{{totalPrice}}</div>
+            </div>
+            <div class="summary-row">
+                <div class="summary-label">ภาษีมูลค่าเพิ่ม (VAT):</div>
+                <div class="summary-value">{{vat}}</div>
+            </div>
+            {{#withholdingTax}}
+            <div class="summary-row">
+                <div class="summary-label">ภาษีหัก ณ ที่จ่าย:</div>
+                <div class="summary-value">-{{withholdingTax}}</div>
+            </div>
+            {{/withholdingTax}}
+            <div class="summary-row total-amount">
+                <div class="summary-label">ยอดรับเงิน:</div>
+                <div class="summary-value total-amount-value">{{totalAmount}}</div>
+            </div>
+            <div class="summary-row">
+                <div style="font-style: italic; color: #555;">{{netTotalPriceInWords}}</div>
+            </div>
+        </div>
+
+        <!-- Payment Info -->
+        {{#paymentMethod}}
+        <div class="payment-info">
+            <div class="payment-info-label">ข้อมูลการชำระเงิน:</div>
+            <div>{{paymentMethod}}</div>
+        </div>
+        {{/paymentMethod}}
+
+        <!-- Remark Section -->
+        {{#remark}}
+        <div class="remark-section">
+            <div class="remark-label">หมายเหตุ:</div>
+            <div>{{remark}}</div>
+        </div>
+        {{/remark}}
+
+        <!-- Signature Section -->
+        <div class="signature-section" style="margin-top: 0.5in;">
+            <div class="signature-box">
+                <div>ลายเซ็นผู้บันทึก</div>
+                <div style="height: 0.8in;"></div>
+                <div>(...........................)</div>
+            </div>
+            <div class="signature-box">
+                <div>ลายเซ็นผู้รับเงิน</div>
+                <div style="height: 0.8in;"></div>
+                <div>(...........................)</div>
+            </div>
+            <div class="signature-box">
+                <div>วันที่</div>
+                <div style="height: 0.8in;"></div>
+                <div>(...........................)</div>
+            </div>
+        </div>
+
+    </div>
+    {{/pages}}
+</body>
