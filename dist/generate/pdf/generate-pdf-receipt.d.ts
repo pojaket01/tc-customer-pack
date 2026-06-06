@@ -16,16 +16,14 @@ type TGenerateReceiptPDF = {
     customerTaxId: string;
     sellerName: string;
     items: Items[];
-    totalPrice: string;
+    subtotal: string;
     vat: string;
-    netTotalPrice: string;
-    netTotalPriceInWords: string;
     withholdingTax: string;
     totalAmount: string;
+    totalAmountInWords: string;
     paymentMethod: string;
     referenceNumber: string;
     remark: string;
-    needsPageBreak?: boolean;
 };
 declare function generateReceiptPDF(receipt: IReceipt): Promise<Buffer>;
 export { generateReceiptPDF, type TGenerateReceiptPDF };

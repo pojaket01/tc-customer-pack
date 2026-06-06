@@ -6,6 +6,8 @@ export interface IReceipt extends Document {
     customerTaxId: string;
     customerAddress: string;
     sellerName: string;
+    paymentMethod: string;
+    referenceNumber?: string;
     totalAmount: number;
     taxAmount?: number;
     withholderTaxAmount?: number;
@@ -18,7 +20,5 @@ export interface IReceipt extends Document {
         totalPrice: number;
     }[];
     remarks?: string;
-    paymentMethod?: string;
-    referenceNumber?: string;
 }
 //# sourceMappingURL=receipt.d.ts.map

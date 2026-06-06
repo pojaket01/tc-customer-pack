@@ -4,6 +4,7 @@ import fs from "fs"
 import path from "path"
 import moment from "moment"
 import Mustache from "mustache"
+import { numberToThaiText } from "../../common"
 
 type Items = {
     no: number // ลำดับ
@@ -126,7 +127,7 @@ function buildDataFromInvoiceData(invoice: IInvoice): TGenerateInvoicePDF[] {
     const netTotalPrice = invoice.totalAmount  // รวมทั้งสิ้น = ฐาน + VAT = totalAmount
     const withholdingTax = invoice.withholderTaxAmount || 0
     const totalAmount = invoice.amountDue
-    const netTotalPriceInWords = convertNumberToThaiWords(totalAmount)
+    const netTotalPriceInWords = numberToThaiText(totalAmount)
     const remark = invoice.remarks || ''
 
     const invoiceTypeOptions: string[] = ['ต้นฉบับ', 'สำเนา']
@@ -169,112 +170,6 @@ function renderInvoiceHTML(data: TGenerateInvoicePDF[]): string {
     // }
 
     return html
-}
-
-function convertNumberToThaiWords(num: number): string {
-    // ฟังก์ชันนี้จะทำการแปลงตัวเลขเป็นคำภาษาไทย
-    // ตัวอย่างเช่น 1000 จะถูกแปลงเป็น "หนึ่งพันบาทถ้วน"
-    // 1000.50 จะถูกแปลงเป็น "หนึ่งพันบาทห้าสิบสตางค์"
-
-    const thaiDigits = ['ศูนย์', 'หนึ่ง', 'สอง', 'สาม', 'สี่', 'ห้า', 'หก', 'เจ็ด', 'แปด', 'เก้า']
-    const thaiTens = ['', 'สิบ', 'ยี่สิบ', 'สามสิบ', 'สี่สิบ', 'ห้าสิบ', 'หกสิบ', 'เจ็ดสิบ', 'แปดสิบ', 'เก้าสิบ']
-
-    // แยกส่วนจำนวนเต็มและทศนิยม
-    const baht = Math.floor(num)
-    const satang = Math.round((num - baht) * 100)
-
-    function convertToThaiWords(n: number): string {
-        if (n === 0) return ''
-
-        let result = ''
-        let million = Math.floor(n / 1000000)
-        let hundred_thousand = Math.floor((n % 1000000) / 100000)
-        let ten_thousand = Math.floor((n % 100000) / 10000)
-        let thousand = Math.floor((n % 10000) / 1000)
-        let hundred = Math.floor((n % 1000) / 100)
-        let ten = Math.floor((n % 100) / 10)
-        let digit = Math.floor(n % 10)
-
-        // ล้าน (millions)
-        if (million > 0) {
-            if (million === 1) {
-                result += 'หนึ่งล้าน'
-            } else {
-                result += thaiDigits[million] + 'ล้าน'
-            }
-        }
-
-        // แสน (hundred thousands)
-        if (hundred_thousand > 0) {
-            if (hundred_thousand === 1) {
-                result += 'หนึ่งแสน'
-            } else {
-                result += thaiDigits[hundred_thousand] + 'แสน'
-            }
-        }
-
-        // หมื่น (ten thousands)
-        if (ten_thousand > 0) {
-            if (ten_thousand === 1) {
-                result += 'หนึ่งหมื่น'
-            } else {
-                result += thaiDigits[ten_thousand] + 'หมื่น'
-            }
-        }
-
-        // พัน (thousands)
-        if (thousand > 0) {
-            if (thousand === 1) {
-                result += 'หนึ่งพัน'
-            } else {
-                result += thaiDigits[thousand] + 'พัน'
-            }
-        }
-
-        // ร้อย (hundreds)
-        if (hundred > 0) {
-            if (hundred === 1) {
-                result += 'หนึ่งร้อย'
-            } else {
-                result += thaiDigits[hundred] + 'ร้อย'
-            }
-        }
-
-        // สิบและหน่วย (tens and ones)
-        if (ten > 0) {
-            if (ten === 1) {
-                result += 'สิบ'
-                if (digit === 1) {
-                    result += 'เอ็ด'
-                } else if (digit > 0) {
-                    result += thaiDigits[digit]
-                }
-            } else {
-                result += thaiTens[ten]
-                if (digit === 1) {
-                    result += 'เอ็ด'
-                } else if (digit > 0) {
-                    result += thaiDigits[digit]
-                }
-            }
-        } else if (digit > 0) {
-            result += thaiDigits[digit]
-        }
-
-        return result
-    }
-
-    // สร้างข้อความสำหรับบาท
-    let result = convertToThaiWords(baht) + 'บาท'
-
-    // สร้างข้อความสำหรับสตางค์
-    if (satang > 0) {
-        result += convertToThaiWords(satang) + 'สตางค์'
-    } else {
-        result += 'ถ้วน'
-    }
-
-    return result
 }
 
 function formatCurrency(amount: number, digits: number = 2): string {

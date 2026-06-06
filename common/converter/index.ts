@@ -1,0 +1,1 @@
+export { numberToThaiText } from './numberToThaiTxt'

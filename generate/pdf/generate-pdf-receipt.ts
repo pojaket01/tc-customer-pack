@@ -4,6 +4,7 @@ import fs from "fs"
 import path from "path"
 import moment from "moment"
 import Mustache from "mustache"
+import { numberToThaiText } from "../../common"
 
 type Items = {
     no: number // ลำดับ
@@ -18,21 +19,19 @@ type TGenerateReceiptPDF = {
     logo: string // URL หรือ path ของโลโก้บริษัท
     receiptNumber: string // เลขที่ใบเสร็จรับเงิน
     receiptDate: string // วันที่ออกใบเสร็จรับเงิน
-    customerName: string // ชื่อลูกค้า
-    customerAddress: string // ที่อยู่ลูกค้า
-    customerTaxId: string // เลขประจำตัวผู้เสียภาษีลูกค้า
-    sellerName: string // ชื่อผู้ขาย
+    customerName: string // ชื่อผู้รับเงิน
+    customerAddress: string // ที่อยู่ผู้รับเงิน
+    customerTaxId: string // เลขประจำตัวผู้เสียภาษี
+    sellerName: string // ชื่อผู้บันทึก
     items: Items[],
-    totalPrice: string // ราคารวมทั้งสิน
+    subtotal: string // ยอดรวมของรายการ
     vat: string // ภาษีมูลค่าเพิ่ม
-    netTotalPrice: string // ราคารวมทั้งสิน + ภาษี
-    netTotalPriceInWords: string // ราคารวมทั้งสินเป็นตัวอักษร ex "หนึ่งพันบาทถ้วน"
     withholdingTax: string // ภาษีหัก ณ ที่จ่าย
-    totalAmount: string // ยอดรับเงิน
+    totalAmount: string // ยอดรับเงินสุดท้าย (ยอดสิ่งที่รับเงิน)
+    totalAmountInWords: string // ยอดรับเงินเป็นตัวอักษร
     paymentMethod: string // วิธีการชำระเงิน
     referenceNumber: string // เลขอ้างอิง
     remark: string // หมายเหตุ
-    needsPageBreak?: boolean // Flag to add page break after this receipt
 }
 
 async function generateReceiptPDF(receipt: IReceipt): Promise<Buffer> {
@@ -40,14 +39,13 @@ async function generateReceiptPDF(receipt: IReceipt): Promise<Buffer> {
     const data = buildDataFromReceiptData(receipt)
 
     const browser = await puppeteer.launch()
-    try {
-        const page = await browser.newPage()
-        await page.setContent(data.html, { waitUntil: 'networkidle0' })
-        const pdf = await page.pdf({ format: 'A4' })
-        return pdf
-    } finally {
-        await browser.close()
-    }
+    const page = await browser.newPage()
+    
+    await page.setContent(data.html)
+    const pdfData = await page.pdf({ printBackground: true })
+    await browser.close()
+
+    return Buffer.from(pdfData)
 }
 
 function buildDataFromReceiptData(receipt: IReceipt): { html: string } {
@@ -66,7 +64,7 @@ function buildDataFromReceiptData(receipt: IReceipt): { html: string } {
     const subtotal = receipt.details.reduce((sum, detail) => sum + detail.totalPrice, 0)
     const taxAmount = receipt.taxAmount || 0
     const withholdingTaxAmount = receipt.withholderTaxAmount || 0
-    const totalAmount = receipt.totalAmount
+    const totalAmount = receipt.totalAmount // ยอดสุดท้ายที่รับเงิน
 
     const receiptData: TGenerateReceiptPDF = {
         logo: '', // สามารถเพิ่มโลโก้ได้
@@ -77,12 +75,11 @@ function buildDataFromReceiptData(receipt: IReceipt): { html: string } {
         customerTaxId: receipt.customerTaxId,
         sellerName: receipt.sellerName,
         items,
-        totalPrice: subtotal.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+        subtotal: subtotal.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
         vat: taxAmount.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
-        netTotalPrice: (subtotal + taxAmount).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
-        netTotalPriceInWords: numberToThaiText(subtotal + taxAmount),
         withholdingTax: withholdingTaxAmount.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
         totalAmount: totalAmount.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+        totalAmountInWords: numberToThaiText(totalAmount),
         paymentMethod: receipt.paymentMethod || '',
         referenceNumber: receipt.referenceNumber || '',
         remark: receipt.remarks || '',
@@ -92,59 +89,6 @@ function buildDataFromReceiptData(receipt: IReceipt): { html: string } {
     return { html }
 }
 
-function numberToThaiText(num: number): string {
-    // Helper function to convert number to Thai text
-    // This is a simplified version - you may want to use a library for more complex cases
-    const units = ['', 'หนึ่ง', 'สอง', 'สาม', 'สี่', 'ห้า', 'หก', 'เจ็ด', 'แปด', 'เก้า']
-    const tens = ['', 'สิบ', 'ยี่สิบ', 'สามสิบ', 'สี่สิบ', 'ห้าสิบ', 'หกสิบ', 'เจ็ดสิบ', 'แปดสิบ', 'เก้าสิบ']
-    const scales = ['', 'พัน', 'หมื่น', 'แสน', 'ล้าน']
 
-    if (num === 0) return 'ศูนย์บาท'
-
-    let result = ''
-    let scaleIndex = 0
-
-    const numStr = Math.floor(num).toString().padStart(6, '0')
-    
-    for (let i = 0; i < numStr.length; i += 3) {
-        const group = parseInt(numStr.substring(i, i + 3))
-        
-        if (group !== 0) {
-            const hundred = Math.floor(group / 100)
-            const ten = Math.floor((group % 100) / 10)
-            const unit = group % 10
-
-            if (hundred > 0) {
-                result += units[hundred] + 'ร้อย'
-            }
-            if (ten > 0) {
-                result += tens[ten]
-            }
-            if (unit > 0) {
-                if (ten === 0 && unit === 1) {
-                    result += 'หนึ่ง'
-                } else {
-                    result += units[unit]
-                }
-            }
-
-            if (scaleIndex > 0) {
-                result += scales[3 - scaleIndex]
-            }
-        }
-
-        scaleIndex++
-    }
-
-    // Handle decimal part (satang)
-    const decimalPart = Math.round((num % 1) * 100)
-    if (decimalPart > 0) {
-        result += 'บาท' + numberToThaiText(decimalPart) + 'สตางค์'
-    } else {
-        result += 'บาทถ้วน'
-    }
-
-    return result
-}
 
 export { generateReceiptPDF, type TGenerateReceiptPDF }
